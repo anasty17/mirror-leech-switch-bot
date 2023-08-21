@@ -138,13 +138,17 @@ AUTHORIZED_CHATS = environ.get('AUTHORIZED_CHATS', '')
 if len(AUTHORIZED_CHATS) != 0:
     aid = AUTHORIZED_CHATS.split()
     for id_ in aid:
-        user_data[int(id_.strip())] = {'is_auth': True}
+        id_ = id_.strip()
+        id_ = int(id_) if id_.isdigit() else id_
+        user_data[id_] = {'is_auth': True}
 
 SUDO_USERS = environ.get('SUDO_USERS', '')
 if len(SUDO_USERS) != 0:
     aid = SUDO_USERS.split()
     for id_ in aid:
-        user_data[int(id_.strip())] = {'is_sudo': True}
+        id_ = id_.strip()
+        id_ = int(id_) if id_.isdigit() else id_
+        user_data[id_] = {'is_sudo': True}
 
 EXTENSION_FILTER = environ.get('EXTENSION_FILTER', '')
 if len(EXTENSION_FILTER) > 0:
