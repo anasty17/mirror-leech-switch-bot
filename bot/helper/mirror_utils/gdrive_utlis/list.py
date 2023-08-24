@@ -35,10 +35,10 @@ async def id_updates(ctx, obj):
     obj.query_proc = True
     if data[1] == 'pre':
         obj.iter_start -= LIST_LIMIT * obj.page_step
-        await obj.get_path_buttons()
+        await obj.get_items_buttons()
     elif data[1] == 'nex':
         obj.iter_start += LIST_LIMIT * obj.page_step
-        await obj.get_path_buttons()
+        await obj.get_items_buttons()
     elif data[1] == 'back':
         if data[2] == 'dr':
             await obj.choose_token()
@@ -64,10 +64,10 @@ async def id_updates(ctx, obj):
         if obj.page_step == int(data[2]):
             return
         obj.page_step = int(data[2])
-        await obj.get_path_buttons()
+        await obj.get_items_buttons()
     elif data[1] == 'root':
         obj.id = obj.parents[0]['id']
-        obj.parents = obj.parents[0]
+        obj.parents = [obj.parents[0]]
         await obj.get_items()
     elif data[1] == 'itype':
         obj.item_type = data[2]
