@@ -20,7 +20,7 @@ async def deletefile(ctx):
         link = ''
     if is_gdrive_link(link):
         LOGGER.info(link)
-        msg = await sync_to_async(gdDelete().deletefile, link, message.user)
+        msg = await sync_to_async(gdDelete().deletefile, link, message.user_id)
     else:
         msg = 'Send Gdrive link along with command or by replying to the link by command'
     reply_message = await sendMessage(message, msg)
