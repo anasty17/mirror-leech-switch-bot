@@ -31,19 +31,20 @@ async def __onDownloadStarted(api, gid):
         return
     else:
         LOGGER.info(f'onDownloadStarted: {download.name} - Gid: {gid}')
-    if listener.upDest.startswith('mtp:') and listener.user_dict('stop_duplicate', False) or not listener.upDest.startswith('mtp:') and config_dict['STOP_DUPLICATE']:
         await sleep(1)
-        if dl := await getDownloadByGid(gid):
-            if not hasattr(dl, 'listener'):
-                LOGGER.warning(
-                    f"onDownloadStart: {gid}. STOP_DUPLICATE didn't pass since download completed earlier!")
-                return
-            listener = dl.listener()
+
+    if dl := await getDownloadByGid(gid):
+        if not hasattr(dl, 'listener'):
+            LOGGER.warning(
+                f"onDownloadStart: {gid}. STOP_DUPLICATE didn't pass since download completed earlier!")
+            return
+        listener = dl.listener()
+        if listener.upDest.startswith('mtp:') and listener.user_dict('stop_duplicate', False) or not listener.upDest.startswith('mtp:') and config_dict['STOP_DUPLICATE']:
             if listener.isLeech or listener.select or not is_gdrive_id(listener.upDest):
                 return
             download = await sync_to_async(api.get_download, gid)
             if not download.is_torrent:
-                await sleep(3)
+                await sleep(2)
                 download = download.live
             LOGGER.info('Checking File/Folder if already in Drive...')
             name = download.name
