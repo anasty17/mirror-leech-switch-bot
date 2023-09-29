@@ -6,11 +6,10 @@ from os import execl as osexecl
 from psutil import disk_usage, cpu_percent, swap_memory, cpu_count, virtual_memory, net_io_counters, boot_time
 from time import time
 from sys import executable
-from swibots import RegisterCommand
-from swibots import CommandHandler, Message
+from swibots import CommandHandler, Message, BotCommand
 from asyncio import create_subprocess_exec, gather
 
-from bot import bot, botStartTime, LOGGER, Interval, DATABASE_URL, QbInterval, scheduler
+from bot import bot, botStartTime, LOGGER, Interval, QbInterval, scheduler
 from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time, cmd_exec, sync_to_async
 from .helper.switch_helper.bot_commands import BotCommands
@@ -77,7 +76,7 @@ async def restart(ctx):
     proc2 = await create_subprocess_exec('python3', 'update.py')
     await gather(proc1.wait(), proc2.wait())
     async with aiopen(".restartmsg", "w") as f:
-        await f.write(f"{restart_message.receiver_id}\n{restart_message.community_id}\n{restart_message.group_id}\n{restart_message.id}\n")
+        await f.write(f"{restart_message.id}")
     osexecl(executable, executable, "-m", "bot")
 
 
@@ -135,82 +134,69 @@ async def restart_notification():
     if not await aiopath.isfile(".restartmsg"):
         return
     with open(".restartmsg") as f:
-        rc_id, c_id, g_id, msg_id = map(str, f)
-        rc_id = rc_id.strip() if rc_id.lower() != 'none' else None
-        c_id = c_id.strip() if c_id.lower() != 'none' else None
-        g_id = g_id.strip() if g_id.lower() != 'none' else None
-        msg_id = int(msg_id)
-    try:
-        msg = Message(bot)
-        msg.message = 'Restarted Successfully!'
-        msg.receiver_id = rc_id
-        msg.community_id = c_id
-        msg.group_id = g_id
-        msg.id = msg_id
-        await bot.edit_message(msg)
-    except:
-        pass
+        msg_id = int(f.read())
+    await bot.edit_message(msg_id, 'Restarted Successfully!')
     await aioremove(".restartmsg")
 
 
 def register_bot_cmds():
-    bot.register_command(
-        [RegisterCommand(BotCommands.MirrorCommand, "Start mirroring to cloud", True),
-         RegisterCommand(
+    bot.set_bot_commands(
+        [BotCommand(BotCommands.MirrorCommand, "Start mirroring to cloud", True),
+         BotCommand(
              BotCommands.QbMirrorCommand, "Start Mirroring to cloud using qBittorrent", True),
-         RegisterCommand(
+         BotCommand(
              BotCommands.YtdlCommand, "Mirror yt-dlp supported link", True),
-         RegisterCommand(
+         BotCommand(
              BotCommands.LeechCommand, "Start leeching to Switch", True),
-         RegisterCommand(
+         BotCommand(
              BotCommands.QbLeechCommand, "Start leeching using qBittorrent", True),
-         RegisterCommand(
+         BotCommand(
              BotCommands.YtdlLeechCommand, "Leech yt-dlp supported link", True),
-         RegisterCommand(BotCommands.CloneCommand,
+         BotCommand(BotCommands.CloneCommand,
                          "Copy file/folder to Google Drive", True),
-         RegisterCommand(BotCommands.CountCommand,
+         BotCommand(BotCommands.CountCommand,
                          "Count file/folder of Google Drive", True),
-         RegisterCommand(BotCommands.DeleteCommand,
+         BotCommand(BotCommands.DeleteCommand,
                          "Delete file/folder from Google Drive (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.UserSetCommand, "Users settings", True),
-         RegisterCommand(BotCommands.BotSetCommand, "Bot settings", True),
-         RegisterCommand(BotCommands.BtSelectCommand,
+         BotCommand(BotCommands.UserSetCommand, "Users settings", True),
+         BotCommand(BotCommands.BotSetCommand, "Bot settings", True),
+         BotCommand(BotCommands.BtSelectCommand,
                          "Select files from torrents by gid or reply", True),
-         RegisterCommand(BotCommands.CancelMirror,
+         BotCommand(BotCommands.CancelMirror,
                          "Cancel task by gid or reply", True),
-         RegisterCommand(BotCommands.CancelAllCommand,
+         BotCommand(BotCommands.CancelAllCommand,
                          "Cancel all [status] tasks", True),
-         RegisterCommand(BotCommands.ListCommand,
+         BotCommand(BotCommands.ListCommand,
                          "Search in Google Drive(s)", True),
-         RegisterCommand(BotCommands.SearchCommand,
+         BotCommand(BotCommands.SearchCommand,
                          "Search for torrents with API", True),
-         RegisterCommand(BotCommands.StatusCommand,
+         BotCommand(BotCommands.StatusCommand,
                          "Shows a status of all the downloads", True),
-         RegisterCommand(BotCommands.PingCommand,
+         BotCommand(BotCommands.PingCommand,
                          "Check how long it takes to Ping the Bot (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.AuthorizeCommand,
+         BotCommand(BotCommands.AuthorizeCommand,
                          "Authorize a chat or a user to use the bot (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.UnAuthorizeCommand,
+         BotCommand(BotCommands.UnAuthorizeCommand,
                          "Unauthorize a chat or a user to use the bot (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.UsersCommand,
+         BotCommand(BotCommands.UsersCommand,
                          "Show users settings (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.AddSudoCommand,
+         BotCommand(BotCommands.AddSudoCommand,
                          "Add sudo user (Only Owner)", True),
-         RegisterCommand(BotCommands.RmSudoCommand,
+         BotCommand(BotCommands.RmSudoCommand,
                          "Remove sudo users (Only Owner)", True),
-         RegisterCommand(BotCommands.RestartCommand,
+         BotCommand(BotCommands.RestartCommand,
                          "Restart and update the bot (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.LogCommand,
+         BotCommand(BotCommands.LogCommand,
                          "Get a log file of the bot. Handy for getting crash reports (Only Owner & Sudo)", True),
-         RegisterCommand(BotCommands.ShellCommand,
+         BotCommand(BotCommands.ShellCommand,
                          "Run shell commands (Only Owner)", True),
-         RegisterCommand(BotCommands.EvalCommand,
+         BotCommand(BotCommands.EvalCommand,
                          "Run Python Code Line | Lines (Only Owner)", True),
-         RegisterCommand(BotCommands.ExecCommand,
+         BotCommand(BotCommands.ExecCommand,
                          "Run Commands In Exec (Only Owner)", True),
-         RegisterCommand(BotCommands.ClearLocalsCommand,
+         BotCommand(BotCommands.ClearLocalsCommand,
                          "Clear locals (Only Owner)", True),
-         RegisterCommand(BotCommands.RssCommand, "RSS Menu", True)])
+         BotCommand(BotCommands.RssCommand, "RSS Menu", True)])
 
 
 async def main():

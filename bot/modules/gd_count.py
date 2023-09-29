@@ -12,7 +12,7 @@ from bot.helper.ext_utils.bot_utils import is_gdrive_link, sync_to_async, get_re
 async def countNode(ctx):
     message = ctx.event.message
     args = message.text.split()
-    tag = message.user.username
+    tag = f'@{message.user.username}'
 
     link = args[1] if len(args) > 1 else ''
     if len(link) == 0 and (reply_to := message.replied_to):

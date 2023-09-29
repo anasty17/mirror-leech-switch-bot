@@ -228,13 +228,13 @@ async def event_handler(ctx, pfunc, document=False, photo=False):
         return bool(rmsg.user_id == user_id and rchat_id == chat_id and mtype)
 
     handler = MessageHandler(pfunc, filter=filters.create(event_filter))
-    ctx.bot.add_handler(handler)
+    ctx.app.add_handler(handler)
     while handler_dict[user_id]:
         await sleep(0.5)
         if time() - start_time > 60:
             handler_dict[user_id] = False
             await update_user_settings(ctx)
-    ctx.bot.remove_handler(handler)
+    ctx.app.remove_handler(handler)
 
 
 async def edit_user_settings(ctx):

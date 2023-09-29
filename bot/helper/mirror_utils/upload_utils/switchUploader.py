@@ -3,7 +3,6 @@ from logging import getLogger, ERROR
 from aiofiles.os import remove as aioremove, path as aiopath, rename as aiorename, makedirs
 from os import walk, path as ospath
 from time import time
-from swibots import MediaUploadRequest, Message
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type, RetryError
 from re import sub as re_sub
 from natsort import natsorted
@@ -72,16 +71,14 @@ class SwUploader:
     async def __msg_to_reply(self):
         if LD := config_dict['LEECH_DUMP_CHAT']:
             text = self.__listener.message.message.lstrip('/').lstrip('@')
+            if '|' in LD:
+                commmunity_id, group_id = LD.split('|')
+                receiver_id = None
+            else:
+                receiver_id = int(LD)
+                commmunity_id, group_id = None, None
             try:
-                msg = Message(bot)
-                msg.message = text
-                if '|' in LD:
-                    commmunity_id, group_id = LD.split('|')
-                    msg.community_id = commmunity_id
-                    msg.group_id = group_id
-                else:
-                    msg.receiver_id = int(LD)
-                self.__sent_msg = await bot.send_message(msg)
+                self.__sent_msg = await bot.send_message(text, community_id=commmunity_id, group_id=group_id, user_id=receiver_id)
             except Exception as e:
                 await self.__listener.onUploadError(str(e))
                 return False
@@ -160,7 +157,7 @@ class SwUploader:
         if self.__thumb is not None and not await aiopath.exists(self.__thumb):
             self.__thumb = None
         thumb = self.__thumb
-        is_video, is_audio, is_image = await get_document_type(self.__up_path)
+        is_video, _, is_image = await get_document_type(self.__up_path)
 
         if not is_image and thumb is None:
             file_name = ospath.splitext(file)[0]
@@ -172,19 +169,16 @@ class SwUploader:
             thumb = await take_ss(self.__up_path, None)
         if self.__is_cancelled:
             return
-        msg = self.__sent_msg._prepare_response()
-        if self.__as_doc:
-            msg.is_document = True
+
         mime_type = await sync_to_async(get_mime_type, self.__up_path)
 
-        media = MediaUploadRequest(path=self.__up_path,
-                                    file_name=file,
-                                    mime_type=mime_type,
-                                    description=description,
-                                    thumbnail=thumb,
-                                    callback=self.__upload_progress)
-
-        self.__sent_msg = await self.__sent_msg.reply(msg, media)
+        self.__sent_msg = await self.__sent_msg.reply_media(document=self.__up_path,
+                                                            message=description,
+                                                            description=file,
+                                                            mime_type=mime_type,
+                                                            thumb=thumb,
+                                                            progress=self.__upload_progress,
+                                                            media_type=7 if self.__as_doc else None)
         buttons = ButtonMaker()
         buttons.ubutton("Direct Download Link", self.__sent_msg.media_link)
         button = buttons.build_menu()

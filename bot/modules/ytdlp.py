@@ -121,14 +121,14 @@ class YtSelection:
                             if item.get('audio_ext') == 'm4a':
                                 self.__is_m4a = True
                             b_name = f"{item['acodec']}-{item['ext']}"
-                            v_format = f'ba[format_id={format_id}]'
+                            v_format = format_id
                         elif item.get('height'):
                             height = item['height']
                             ext = item['ext']
                             fps = item['fps'] if item.get('fps') else ''
                             b_name = f'{height}p{fps}-{ext}'
                             ba_ext = '[ext=m4a]' if self.__is_m4a and ext == 'mp4' else ''
-                            v_format = f'bv*[format_id={format_id}]+ba{ba_ext}/b[height=?{height}]'
+                            v_format = f'{format_id}+ba{ba_ext}/b[height=?{height}]'
                         else:
                             continue
 
@@ -323,7 +323,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         user_id = int(id_)
         message.user = await client.get_user(user_id)
     else:
-        tag = message.user.username
+        tag = f'@{message.user.username}'
         user_id = message.user_id
 
     user_dict = user_data.get(user_id, {})
@@ -430,11 +430,11 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
 
 
 async def ytdl(ctx):
-    await _ytdl(ctx.bot, ctx.event.message)
+    await _ytdl(ctx.app, ctx.event.message)
 
 
 async def ytdlleech(ctx):
-    await _ytdl(ctx.bot, ctx.event.message, isLeech=True)
+    await _ytdl(ctx.app, ctx.event.message, isLeech=True)
 
 
 bot.add_handler(CommandHandler(BotCommands.YtdlCommand,

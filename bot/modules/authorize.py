@@ -14,6 +14,10 @@ async def authorize(ctx):
     msg = message.message.split()
     if len(msg) > 1:
         id_ = msg[1].strip()
+        try:
+            id_ = int(id_)
+        except:
+            pass
     elif reply_to := message.replied_to:
         id_ = reply_to.user_id
     else:
@@ -35,6 +39,10 @@ async def unauthorize(ctx):
     msg = message.message.split()
     if len(msg) > 1:
         id_ = msg[1].strip()
+        try:
+            id_ = int(id_)
+        except:
+            pass
     elif reply_to := message.replied_to:
         id_ = reply_to.user_id
     else:
@@ -57,6 +65,10 @@ async def addSudo(ctx):
     msg = message.message.split()
     if len(msg) > 1:
         id_ = msg[1].strip()
+        try:
+            id_ = int(id_)
+        except:
+            pass
     elif reply_to := message.replied_to:
         id_ = reply_to.user_id
     if id_:
@@ -78,6 +90,10 @@ async def removeSudo(ctx):
     msg = message.message.split()
     if len(msg) > 1:
         id_ = msg[1].strip()
+        try:
+            id_ = int(id_)
+        except:
+            pass
     elif reply_to := message.replied_to:
         id_ = reply_to.user_id
     if id_ and id_ not in user_data or user_data[id_].get('is_sudo'):

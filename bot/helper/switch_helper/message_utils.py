@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from asyncio import sleep
 from time import time
-from swibots import Message, MediaUploadRequest
 
 from bot import config_dict, LOGGER, status_reply_dict, status_reply_dict_lock, Interval, bot, download_dict_lock
 from bot.helper.ext_utils.bot_utils import get_readable_message, setInterval, sync_to_async
@@ -9,7 +8,7 @@ from bot.helper.ext_utils.bot_utils import get_readable_message, setInterval, sy
 
 async def sendMessage(message, text, buttons=None):
     try:
-        return await message.reply_text(text, buttons)
+        return await message.reply_text(text, inline_markup=buttons)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
@@ -23,28 +22,24 @@ async def editMessage(message, text, buttons=None):
         return str(e)
 
 
-async def sendFile(msg, file, description=None):
+async def sendFile(msg, file, description=''):
     try:
-        message = Message(bot)
-        media = MediaUploadRequest(file, description=description)
-        return await msg.reply(message, media)
+        return await msg.reply_media(description, file, description=description)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
 
 
 async def sendRss(text):
+    RC = config_dict['RSS_CHAT']
+    if '|' in RC:
+        commmunity_id, group_id = RC.split('|')
+        receiver_id = None
+    else:
+        receiver_id = int(RC)
+        commmunity_id, group_id = None, None
     try:
-        RC = config_dict['RSS_CHAT']
-        msg = Message(bot)
-        msg.message = text
-        if '|' in RC:
-            commmunity_id, group_id = RC.split('|')
-            msg.community_id = commmunity_id
-            msg.group_id = group_id
-        else:
-            msg.receiver_id = int(RC)
-        return await bot.send_message(msg)
+        return await bot.send_message(text, community_id=commmunity_id, group_id=group_id, user_id=receiver_id)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)

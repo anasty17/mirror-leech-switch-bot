@@ -219,7 +219,7 @@ async def _cloneNode(client, message):
     rcf = args['-rcf']
     link = args['link']
 
-    tag = message.user.username
+    tag = f'@{message.user.username}'
 
     if not link and (reply_to := message.replied_to):
         link = reply_to.message.split('\n', 1)[0].strip()
@@ -268,7 +268,7 @@ async def _cloneNode(client, message):
 
 
 async def clone(ctx):
-    await _cloneNode(ctx.bot, ctx.event.message)
+    await _cloneNode(ctx.app, ctx.event.message)
 
 bot.add_handler(CommandHandler(BotCommands.CloneCommand,
                 clone, filter=CustomFilters.authorized))

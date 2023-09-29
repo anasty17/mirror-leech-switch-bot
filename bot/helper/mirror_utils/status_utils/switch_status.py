@@ -3,10 +3,11 @@ from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size,
 
 
 class SwitchStatus:
-    def __init__(self, obj, size, message, gid):
+    def __init__(self, obj, size, message, gid, status):
         self.__obj = obj
         self.__size = size
         self.__gid = gid
+        self.__status = status
         self.message = message
 
     def processed_bytes(self):
@@ -16,7 +17,9 @@ class SwitchStatus:
         return get_readable_file_size(self.__size)
 
     def status(self):
-        return MirrorStatus.STATUS_UPLOADING
+        if self.__status == 'up':
+            return MirrorStatus.STATUS_UPLOADING
+        return MirrorStatus.STATUS_DOWNLOADING
 
     def name(self):
         return self.__obj.name

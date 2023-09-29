@@ -334,13 +334,13 @@ async def event_handler(ctx, pfunc, rfunc, document=False):
         return bool(not rmsg.user.is_bot and rmsg.user_id == ctx.event.action_by_id and rchat_id == chat_id and (rmsg.message or rmsg.is_media and rmsg.media_info.media_type == 7 and document))
 
     handler = MessageHandler(pfunc, filter=filters.create(event_filter))
-    ctx.bot.add_handler(handler)
+    ctx.app.add_handler(handler)
     while handler_dict[chat_id]:
         await sleep(0.5)
         if time() - start_time > 60:
             handler_dict[chat_id] = False
             await rfunc()
-    ctx.bot.remove_handler(handler)
+    ctx.app.remove_handler(handler)
 
 
 async def edit_bot_settings(ctx):

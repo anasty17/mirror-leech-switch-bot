@@ -335,7 +335,7 @@ config_dict = {'AS_DOCUMENT': AS_DOCUMENT,
 log_info("Creating client from BOT_TOKEN")
 bot = BotApp(BOT_TOKEN, 'MLSB')
 bot_loop = bot._loop
-bot_name = bot.bot.user_name
+bot_name = bot.user.user_name
 
 if GDRIVE_ID:
     DRIVES_NAMES.append("Main")

@@ -304,7 +304,7 @@ class MirrorLeechListener:
                 size = size - s
             LOGGER.info(f"Leech Name: {up_name}")
             sw = SwUploader(up_name, up_dir, self)
-            sw_upload_status = SwitchStatus(sw, size, self.message, gid)
+            sw_upload_status = SwitchStatus(sw, size, self.message, gid, 'up')
             async with download_dict_lock:
                 download_dict[self.uid] = sw_upload_status
             await update_all_messages()

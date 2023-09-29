@@ -22,6 +22,7 @@ from bot.helper.switch_helper.message_utils import sendMessage
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.ext_utils.help_messages import MIRROR_HELP_MESSAGE
 from bot.helper.ext_utils.bulk_links import extract_bulk_links
+from bot.helper.mirror_utils.download_utils.switch_download import SwitchDownloadHelper
 
 
 async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=None, bulk=[]):
@@ -54,6 +55,7 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
     bulk_end = 0
     ratio = None
     seed_time = None
+    sfile = False
 
     if not isinstance(seed, bool):
         dargs = seed.split(':')
@@ -127,22 +129,23 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
         user_id = int(id_)
         message.user = await client.get_user(user_id)
     else:
-        tag = message.user.username
+        tag = f'@{message.user.username}'
         user_id = message.user_id
 
     reply_to = message.replied_to
     if reply_to:
         if reply_to.is_media:
-            link = reply_to.media_link
-            if not name:
-                name = reply_to.media_info.file_name
+            if reply_to.media_info.mime_type == 'application/x-bittorrent':
+                link = await reply_to.download()
+            else:
+                sfile = True
         elif not link and reply_to.message:
             reply_text = reply_to.message.split('\n', 1)[0].strip()
             if is_url(reply_text) or is_magnet(reply_text):
                 link = reply_text
 
     if not is_url(link) and not is_magnet(link) and not await aiopath.exists(link) and not is_rclone_path(link) \
-            and not is_gdrive_id(link):
+            and not is_gdrive_id(link) and not sfile:
         await sendMessage(message, MIRROR_HELP_MESSAGE)
         return
 
@@ -150,7 +153,7 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
         LOGGER.info(link)
 
     if not is_mega_link(link) and not isQbit and not is_magnet(link) and not is_rclone_path(link) \
-       and not is_gdrive_link(link) and not link.endswith('.torrent') and not is_gdrive_id(link):
+       and not is_gdrive_link(link) and not link.endswith('.torrent') and not is_gdrive_id(link) and not sfile:
         content_type = await get_content_type(link)
         if content_type is None or re_match(r'text/html|text/plain', content_type):
             try:
@@ -220,7 +223,9 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
     listener = MirrorLeechListener(
         message, compress, extract, isQbit, isLeech, tag, select, seed, sameDir, rcf, up, join)
 
-    if is_rclone_path(link):
+    if sfile:
+        await SwitchDownloadHelper(listener).add_download(reply_to, f'{path}/', name)
+    elif is_rclone_path(link):
         if link.startswith('mrcc:'):
             link = link.split('mrcc:', 1)[1]
             config_path = f'rclone/{user_id}.conf'
@@ -248,19 +253,19 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
 
 
 async def mirror(ctx):
-    await _mirror_leech(ctx.bot, ctx.event.message)
+    await _mirror_leech(ctx.app, ctx.event.message)
 
 
 async def qb_mirror(ctx):
-    await _mirror_leech(ctx.bot, ctx.event.message, isQbit=True)
+    await _mirror_leech(ctx.app, ctx.event.message, isQbit=True)
 
 
 async def leech(ctx):
-    await _mirror_leech(ctx.bot, ctx.event.message, isLeech=True)
+    await _mirror_leech(ctx.app, ctx.event.message, isLeech=True)
 
 
 async def qb_leech(ctx):
-    await _mirror_leech(ctx.bot, ctx.event.message, isQbit=True, isLeech=True)
+    await _mirror_leech(ctx.app, ctx.event.message, isQbit=True, isLeech=True)
 
 
 bot.add_handler(CommandHandler(BotCommands.MirrorCommand,

@@ -68,7 +68,7 @@ class SwitchDownloadHelper:
 
     async def __download(self, message, path):
         try:
-            download = await message.download(file_name=path, progress=self.__onDownloadProgress)
+            download = await message.download(file_name=path, block=True, progress=self.__onDownloadProgress)
             if self.__is_cancelled:
                 await self.__onDownloadError('Cancelled by user!')
                 return
@@ -88,7 +88,7 @@ class SwitchDownloadHelper:
                 download = media.source_id not in GLOBAL_GID
 
             if download:
-                if filename == "":
+                if not filename:
                     name = media.file_name
                 else:
                     name = filename

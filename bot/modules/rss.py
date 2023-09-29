@@ -64,7 +64,7 @@ async def rssSub(ctx, pre_event):
     message = ctx.event.message
     user_id = message.user_id
     handler_dict[user_id] = False
-    tag = message.user.username
+    tag = f'@{message.user.username}'
     msg = ''
     items = message.message.split('\n')
     for index, item in enumerate(items, start=1):
@@ -372,13 +372,13 @@ async def event_handler(ctx, pfunc):
         return bool(ruser_id == user_id and rchat_id == chat_id and rmsg.message)
 
     handler = MessageHandler(pfunc, filters.create(event_filter))
-    ctx.bot.add_handler(handler)
+    ctx.app.add_handler(handler)
     while handler_dict[user_id]:
         await sleep(0.5)
         if time() - start_time > 60:
             handler_dict[user_id] = False
             await updateRssMenu(ctx)
-    ctx.bot.remove_handler(handler)
+    ctx.app.remove_handler(handler)
 
 
 async def rssListener(ctx):
