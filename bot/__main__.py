@@ -184,6 +184,8 @@ def register_bot_cmds():
                     "Search for torrents with API", True),
          BotCommand(BotCommands.StatusCommand,
                     "Shows a status of all the downloads", True),
+         BotCommand(BotCommands.StatsCommand,
+                    "Show stats of the machine where the bot is hosted in", True),
          BotCommand(BotCommands.PingCommand,
                     "Check how long it takes to Ping the Bot (Only Owner & Sudo)", True),
          BotCommand(BotCommands.AuthorizeCommand,
