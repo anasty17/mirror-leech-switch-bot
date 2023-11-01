@@ -179,8 +179,8 @@ Fill up rest of the fields. Meaning of each field is discussed below. **NOTE**: 
 
 **1. Required Fields**
 
-- `BOT_TOKEN`: The Switch Bot Token that you got from [@BotFather](https://t.me/BotFather). `Str`
-- `OWNER_ID`: The Switch User ID (not username) of the Owner of the bot. `Int`
+- `BOT_TOKEN`: The Switch Bot Token that you got from [Your Profile](https://graph.org/Switch-BOT-TOKEN-11-01). `Str`
+- `OWNER_ID`: The Switch [User ID](https://graph.org/Switch-OWNER-ID-11-01) (not username) of the Owner of the bot. `Int`
 
 **2. Optional Fields**
 
