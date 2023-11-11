@@ -23,6 +23,7 @@ from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.ext_utils.help_messages import MIRROR_HELP_MESSAGE
 from bot.helper.ext_utils.bulk_links import extract_bulk_links
 from bot.helper.mirror_utils.download_utils.switch_download import SwitchDownloadHelper
+from bot.helper.mirror_utils.download_utils.direct_downloader import add_direct_download
 
 
 async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=None, bulk=[]):
@@ -30,7 +31,7 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
     input_list = text[0].split(' ')
 
     arg_base = {'link': '', '-i': 0, '-m': '', '-d': False, '-j': False, '-s': False, '-b': False,
-                '-n': '', '-e': False, '-z': False, '-up': '', '-rcf': '', '-au': '', '-ap': ''}
+                '-n': '', '-e': False, '-z': False, '-up': '', '-rcf': '', '-au': '', '-ap': '', '-h': ''}
 
     args = arg_parser(input_list[1:], arg_base)
 
@@ -50,6 +51,7 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
     compress = args['-z']
     extract = args['-e']
     join = args['-j']
+    headers = args['-h']
 
     bulk_start = 0
     bulk_end = 0
@@ -158,12 +160,16 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
         if content_type is None or re_match(r'text/html|text/plain', content_type):
             try:
                 link = await sync_to_async(direct_link_generator, link)
-                LOGGER.info(f"Generated link: {link}")
+                if isinstance(link, tuple):
+                    link, headers = link
+                if isinstance(link, str):
+                    LOGGER.info(f"Generated link: {link}")
             except DirectDownloadLinkException as e:
-                LOGGER.info(str(e))
-                if str(e).startswith('ERROR:'):
-                    await sendMessage(message, str(e))
-                    return
+                e = str(e)
+                if 'This link requires a password!' not in e:
+                    LOGGER.info(e)
+                if e.startswith('ERROR:'):
+                    await sendMessage(message, e)
 
     if not isLeech:
         user_dict = user_data.get(user_id, {})
@@ -225,6 +231,8 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
 
     if sfile:
         await SwitchDownloadHelper(listener).add_download(reply_to, f'{path}/', name)
+    elif isinstance(link, dict):
+        await add_direct_download(link, path, listener, name)
     elif is_rclone_path(link):
         if link.startswith('mrcc:'):
             link = link.split('mrcc:', 1)[1]
@@ -246,9 +254,11 @@ async def _mirror_leech(client, message, isQbit=False, isLeech=False, sameDir=No
         pssw = args['-ap']
         if ussr or pssw:
             auth = f"{ussr}:{pssw}"
-            auth = "Basic " + b64encode(auth.encode()).decode('ascii')
+            auth = f"authorization: Basic {b64encode(auth.encode()).decode('ascii')}"
         else:
             auth = ''
+        if headers:
+            auth += f'{auth} {headers}'
         await add_aria2c_download(link, path, listener, name, auth, ratio, seed_time)
 
 

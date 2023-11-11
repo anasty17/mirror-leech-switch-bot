@@ -13,7 +13,9 @@ from aria2p import API as ariaAPI, Client as ariaClient
 from qbittorrentapi import Client as qbClient
 from faulthandler import enable as faulthandler_enable
 from socket import setdefaulttimeout
-from logging import getLogger, FileHandler, StreamHandler, INFO, basicConfig, error as log_error, info as log_info, warning as log_warning
+from logging import (getLogger, FileHandler, StreamHandler, 
+                     INFO, basicConfig, error as log_error, 
+                     info as log_info, warning as log_warning)
 from uvloop import install
 
 faulthandler_enable()
@@ -164,9 +166,13 @@ if len(MEGA_EMAIL) == 0 or len(MEGA_PASSWORD) == 0:
     MEGA_EMAIL = ''
     MEGA_PASSWORD = ''
 
-UPTOBOX_TOKEN = environ.get('UPTOBOX_TOKEN', '')
-if len(UPTOBOX_TOKEN) == 0:
-    UPTOBOX_TOKEN = ''
+FILELION_API = environ.get('FILELION_API', '')
+if len(FILELION_API) == 0:
+    FILELION_API = ''
+
+STREAMWISH_API = environ.get('STREAMWISH_API', '')
+if len(STREAMWISH_API) == 0:
+    STREAMWISH_API = ''
 
 INDEX_URL = environ.get('INDEX_URL', '').rstrip("/")
 if len(INDEX_URL) == 0:
@@ -296,6 +302,7 @@ config_dict = {'AS_DOCUMENT': AS_DOCUMENT,
                'DOWNLOAD_DIR': DOWNLOAD_DIR,
                'EQUAL_SPLITS': EQUAL_SPLITS,
                'EXTENSION_FILTER': EXTENSION_FILTER,
+               'FILELION_API': FILELION_API,
                'GDRIVE_ID': GDRIVE_ID,
                'INDEX_URL': INDEX_URL,
                'IS_TEAM_DRIVE': IS_TEAM_DRIVE,
@@ -317,6 +324,7 @@ config_dict = {'AS_DOCUMENT': AS_DOCUMENT,
                'RSS_CHAT': RSS_CHAT,
                'RSS_DELAY': RSS_DELAY,
                'SEARCH_API_LINK': SEARCH_API_LINK,
+               'STREAMWISH_API': STREAMWISH_API,
                'SEARCH_LIMIT': SEARCH_LIMIT,
                'SEARCH_PLUGINS': SEARCH_PLUGINS,
                'STATUS_LIMIT': STATUS_LIMIT,
@@ -326,7 +334,6 @@ config_dict = {'AS_DOCUMENT': AS_DOCUMENT,
                'TORRENT_TIMEOUT': TORRENT_TIMEOUT,
                'UPSTREAM_REPO': UPSTREAM_REPO,
                'UPSTREAM_BRANCH': UPSTREAM_BRANCH,
-               'UPTOBOX_TOKEN': UPTOBOX_TOKEN,
                'USE_SERVICE_ACCOUNTS': USE_SERVICE_ACCOUNTS,
                'WEB_PINCODE': WEB_PINCODE,
                'YT_DLP_OPTIONS': YT_DLP_OPTIONS}

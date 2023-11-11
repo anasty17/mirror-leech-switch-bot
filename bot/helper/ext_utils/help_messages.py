@@ -75,6 +75,9 @@ Note: Doesn't work with torrents.
 <b>Direct link authorization</b>: -au -ap
 <copy>/cmd</copy> link -au username -ap password
 
+<b>Direct link custom headers</b>: -h
+<code>/cmd</code> link -h Key: value Key1: value1
+
 <b>Extract/Zip</b>: -e -z
 <copy>/cmd</copy> link -e password (extract password protected)
 <copy>/cmd</copy> link -z password (zip password protected)
@@ -178,3 +181,11 @@ Send Gdrive|Gdot|Filepress|Filebee|Appdrive|Gdflix link or rclone path along wit
 
 Note: If -up not specified then rclone destination will be the RCLONE_PATH from config.env
 """
+
+PASSWORD_ERROR_MESSAGE = """
+<b>This link requires a password!</b>
+- Insert <b>::</b> after the link and write the password after the sign.
+
+<b>Example:</b> link::my password
+"""
+
