@@ -335,7 +335,7 @@ class MirrorLeechListener:
             msg += f'\n<b>Total Files:</b> {folders}'
             if mime_type != 0:
                 msg += f'\n<b>Corrupted Files:</b> {files}'
-            msg += f'\n<b>cc:</b> {self.tag}\n\n'
+            msg += f'\n<b>cc:</b> {self.tag}'
             await sendMessage(self.message, msg)
             if self.seed:
                 if self.newDir:

@@ -164,7 +164,6 @@ async def update_buttons(message, key=None, edit_type=None):
 async def edit_variable(ctx, pre_message, key):
     message = ctx.event.message
     chat = message.group_id or message.user_id
-    LOGGER.info(323223323)
     handler_dict[chat] = False
     value = message.message
     if value.lower() == "true":
@@ -227,7 +226,6 @@ async def edit_variable(ctx, pre_message, key):
             INDEX_URLS.insert(0, value)
     elif value.isdigit():
         value = int(value)
-    LOGGER.info(value)
     config_dict[key] = value
     await update_buttons(pre_message, "var")
     await deleteMessage(message)

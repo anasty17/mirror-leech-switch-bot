@@ -365,7 +365,7 @@ async def event_handler(ctx, pfunc):
     handler_dict[user_id] = True
     start_time = time()
 
-    async def event_filter(rctx):
+    async def event_filter(_, rctx):
         rmsg = rctx.event.message
         ruser_id = rmsg.user_id
         rchat_id = rmsg.user_id or rmsg.group_id
