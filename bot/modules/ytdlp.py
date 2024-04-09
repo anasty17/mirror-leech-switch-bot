@@ -289,7 +289,6 @@ class YtDlp(TaskListener):
             "-b": False,
             "-z": False,
             "-sv": False,
-            "-ss": False,
             "-f": False,
             "-fd": False,
             "-fu": False,
@@ -323,7 +322,6 @@ class YtDlp(TaskListener):
         self.thumb = args["-t"]
         self.splitSize = args["-sp"]
         self.sampleVideo = args["-sv"]
-        self.screenShots = args["-ss"]
         self.forceRun = args["-f"]
         self.forceDownload = args["-fd"]
         self.forceUpload = args["-fu"]
