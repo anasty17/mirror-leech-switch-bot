@@ -5,7 +5,6 @@ anytree
 apscheduler
 aria2p
 asyncio
-beautifulsoup4
 cloudscraper
 dnspython
 feedparser
@@ -15,16 +14,15 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 gunicorn
-git+https://github.com/zevtyardt/lk21.git
 httpx
 lxml
 motor
-mutagen
 natsort
 pillow
 psutil
-pybase64
+pycryptodome
 pymongo
+pyrofork
 python-dotenv
 python-magic
 qbittorrent-api
@@ -32,6 +30,8 @@ requests
 swibots
 telegraph
 tenacity
+tgcrypto
+urllib3
 uvloop
 xattr
 yt-dlp
