@@ -23,6 +23,7 @@ psutil
 pycryptodome
 pymongo
 pyrofork
+pyrogram
 python-dotenv
 python-magic
 qbittorrent-api
