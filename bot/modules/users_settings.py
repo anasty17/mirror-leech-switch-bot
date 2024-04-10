@@ -251,9 +251,6 @@ async def set_option(ctx, pre_event, option):
         if not value.isdigit():
             value = getSizeBytes(value)
         value = min(int(value), MAX_SPLIT_SIZE)
-    elif option == "leech_dest":
-        if value.startswith("-") or value.isdigit():
-            value = int(value)
     elif option == "excluded_extensions":
         fx = value.split()
         value = ["aria2", "!qB"]
@@ -294,7 +291,12 @@ async def event_handler(ctx, pfunc, document=False, photo=False):
         else:
             mtype = rmsg.message
         rchat_id = rmsg.group_id or rmsg.user_id
-        return bool(rmsg.user_id == user_id and rchat_id == chat_id and mtype)
+        return bool(
+            not rmsg.user.is_bot
+            and rmsg.user_id == user_id
+            and rchat_id == chat_id
+            and mtype
+        )
 
     handler = MessageHandler(pfunc, filter=filters.create(event_filter))
     ctx.app.add_handler(handler)

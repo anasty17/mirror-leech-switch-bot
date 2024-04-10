@@ -112,11 +112,12 @@ if u have link(folder) have splitted files:
 tg_links = """<b>TG Links</b>:
 
 Treat links like any direct link
-Some links need user access so sure you must add USER_SESSION_STRING for it.
 Three types of links:
+
 Public: https://t.me/channel_name/message_id
 Private: tg://openmessage?user_id=xxxxxx&message_id=xxxxx
 Super: https://t.me/c/channel_id/message_id
+
 Range: https://t.me/channel_name/first_message_id-last_message_id
 Range Example: tg://openmessage?user_id=xxxxxx&message_id=555-560 or https://t.me/channel_name/100-150
 Note: Range link will work only by replying cmd to it"""

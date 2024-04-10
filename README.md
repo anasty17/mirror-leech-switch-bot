@@ -137,6 +137,7 @@ programming in Python.
 - Add sudo users
 - Ability to save upload Paths
 - Name Substitution to rename the files before upload
+- Download tg files using tg-links by session string(bot or user), you can add range also
 - Supported Direct links Generators:
 
 > mediafire (file/folders), hxfile.co (need cookies txt with name) [hxfile.txt], streamtape.com, streamsb.net, streamhub.ink,

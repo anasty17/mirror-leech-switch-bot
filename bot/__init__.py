@@ -96,7 +96,7 @@ if len(DATABASE_URL) == 0:
 if DATABASE_URL:
     try:
         conn = MongoClient(DATABASE_URL)
-        db = conn.mltb
+        db = conn.mlsb
         current_config = dict(dotenv_values("config.env"))
         old_config = db.settings.deployConfig.find_one({"_id": bot_id})
         if old_config is None:
@@ -276,8 +276,6 @@ CMD_SUFFIX = environ.get("CMD_SUFFIX", "")
 
 RSS_CHAT = environ.get("RSS_CHAT", "")
 RSS_CHAT = "" if len(RSS_CHAT) == 0 else RSS_CHAT
-if RSS_CHAT.isdigit() or RSS_CHAT.startswith("-"):
-    RSS_CHAT = int(RSS_CHAT)
 
 RSS_DELAY = environ.get("RSS_DELAY", "")
 RSS_DELAY = 600 if len(RSS_DELAY) == 0 else int(RSS_DELAY)

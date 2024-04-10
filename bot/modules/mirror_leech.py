@@ -11,7 +11,7 @@ from bot.helper.ext_utils.bot_utils import (
     arg_parser,
     COMMAND_USAGE,
 )
-from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
+from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, TgLinkException
 from bot.helper.ext_utils.links_utils import (
     is_url,
     is_magnet,
@@ -19,6 +19,7 @@ from bot.helper.ext_utils.links_utils import (
     is_rclone_path,
     is_telegram_link,
     is_gdrive_id,
+    get_tg_link_message,
 )
 from bot.helper.listeners.task_listener import TaskListener
 from bot.helper.mirror_leech_utils.download_utils.aria2_download import add_aria2c_download
@@ -38,7 +39,7 @@ from bot.helper.mirror_leech_utils.download_utils.switch_download import (
 )
 from bot.helper.switch_helper.bot_commands import BotCommands
 from bot.helper.switch_helper.filters import CustomFilters
-from bot.helper.switch_helper.message_utils import sendMessage, get_tg_link_message
+from bot.helper.switch_helper.message_utils import sendMessage
 from myjd.exception import MYJDException
 
 
@@ -193,8 +194,10 @@ class Mirror(TaskListener):
             elif reply_to.message:
                 self.link = reply_to.message.split("\n", 1)[0].strip()
 
-        if tg and is_telegram_link(self.link):
+        if is_telegram_link(self.link):
             try:
+                if not tg:
+                    raise TgLinkException("No Telegram Session have been added!")
                 tg_msg = await get_tg_link_message(self.link)
             except Exception as e:
                 await sendMessage(self.message, f"ERROR: {e}")
@@ -243,8 +246,6 @@ class Mirror(TaskListener):
         if (
             not self.link
             and file_ is None
-            or is_telegram_link(self.link)
-            and reply_to is None
             or file_ is None
             and not is_url(self.link)
             and not is_magnet(self.link)
@@ -278,6 +279,7 @@ class Mirror(TaskListener):
             and not self.link.endswith(".torrent")
             and file_ is None
             and not is_gdrive_id(self.link)
+            and not tg_msg
         ):
             content_type = await get_content_type(self.link)
             if content_type is None or re_match(r"text/html|text/plain", content_type):

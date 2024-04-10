@@ -27,7 +27,7 @@ class DbManager:
     def _connect(self):
         try:
             self._conn = AsyncIOMotorClient(DATABASE_URL)
-            self._db = self._conn.mltb
+            self._db = self._conn.mlsb
         except PyMongoError as e:
             LOGGER.error(f"Error in DB connection: {e}")
             self._err = True
@@ -193,37 +193,6 @@ class DbManager:
             return
         await self._db.rss[bot_id].delete_one({"_id": user_id})
         self._conn.close
-
-    async def add_incomplete_task(self, cid, link, tag):
-        if self._err:
-            return
-        await self._db.tasks[bot_id].insert_one({"_id": link, "cid": cid, "tag": tag})
-        self._conn.close
-
-    async def rm_complete_task(self, link):
-        if self._err:
-            return
-        await self._db.tasks[bot_id].delete_one({"_id": link})
-        self._conn.close
-
-    async def get_incomplete_tasks(self):
-        notifier_dict = {}
-        if self._err:
-            return notifier_dict
-        if await self._db.tasks[bot_id].find_one():
-            # return a dict ==> {_id, cid, tag}
-            rows = self._db.tasks[bot_id].find({})
-            async for row in rows:
-                if row["cid"] in list(notifier_dict.keys()):
-                    if row["tag"] in list(notifier_dict[row["cid"]]):
-                        notifier_dict[row["cid"]][row["tag"]].append(row["_id"])
-                    else:
-                        notifier_dict[row["cid"]][row["tag"]] = [row["_id"]]
-                else:
-                    notifier_dict[row["cid"]] = {row["tag"]: [row["_id"]]}
-        await self._db.tasks[bot_id].drop()
-        self._conn.close
-        return notifier_dict  # return a dict ==> {cid: {tag: [_id, _id, ...]}}
 
     async def trunc_table(self, name):
         if self._err:

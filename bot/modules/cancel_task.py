@@ -116,7 +116,7 @@ async def cancell_all_buttons(ctx):
     if count == 0:
         await sendMessage(message, "No active tasks!")
         return
-    isSudo = await CustomFilters.sudo("", message)
+    isSudo = await CustomFilters.sudo(ctx)
     button = create_cancel_buttons(isSudo, message.from_user.id)
     can_msg = await sendMessage(message, "Choose tasks to cancel!", button)
     await auto_delete_message(message, can_msg)

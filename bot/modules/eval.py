@@ -30,7 +30,7 @@ def namespace_of(message):
 
 
 def log_input(message):
-    chat_id = message.user_id or message.group_id
+    chat_id = message.group_id or message.user_id
     LOGGER.info(
         f"IN: {message.message} (user={message.user_id}, chat={chat_id})")
 
@@ -106,7 +106,7 @@ def do(func, message):
 
 async def clear(ctx):
     message = ctx.event.message
-    chat_id = message.user_id or message.group_id
+    chat_id = message.group_id or message.user_id
     log_input(message)
     global namespaces
     if chat_id in namespaces:

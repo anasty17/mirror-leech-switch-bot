@@ -1,10 +1,8 @@
-from re import match as re_match
 from time import time
 from asyncio import sleep
 
-from bot import config_dict, LOGGER, status_dict, task_dict_lock, Intervals, bot, tg
+from bot import config_dict, LOGGER, status_dict, task_dict_lock, Intervals, bot
 from bot.helper.ext_utils.bot_utils import setInterval
-from bot.helper.ext_utils.exceptions import TgLinkException
 from bot.helper.ext_utils.status_utils import get_readable_message
 
 
@@ -26,7 +24,7 @@ async def editMessage(message, text, buttons=None):
 
 async def sendFile(msg, file, description=""):
     try:
-        return await msg.reply_media(description, file, description=description)
+        return await msg.reply_media(file, description, description=description)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
@@ -52,8 +50,8 @@ async def sendRss(text):
 async def deleteMessage(message):
     try:
         await message.delete()
-    except Exception as e:
-        LOGGER.error(str(e))
+    except:
+        pass
 
 
 async def auto_delete_message(cmd_message=None, bot_message=None):
@@ -72,55 +70,6 @@ async def delete_status():
                 del status_dict[key]
             except Exception as e:
                 LOGGER.error(str(e))
-
-
-async def get_tg_link_message(link):
-    message = None
-    links = []
-    if link.startswith("https://t.me/"):
-        private = False
-        msg = re_match(
-            r"https:\/\/t\.me\/(?:c\/)?([^\/]+)(?:\/[^\/]+)?\/([0-9-]+)", link
-        )
-    else:
-        private = True
-        msg = re_match(
-            r"tg:\/\/openmessage\?user_id=([0-9]+)&message_id=([0-9-]+)", link
-        )
-
-    chat = msg[1]
-    msg_id = msg[2]
-    if "-" in msg_id:
-        start_id, end_id = msg_id.split("-")
-        msg_id = start_id = int(start_id)
-        end_id = int(end_id)
-        btw = end_id - start_id
-        if private:
-            link = link.split("&message_id=")[0]
-            links.append(f"{link}&message_id={start_id}")
-            for _ in range(btw):
-                start_id += 1
-                links.append(f"{link}&message_id={start_id}")
-        else:
-            link = link.rsplit("/", 1)[0]
-            links.append(f"{link}/{start_id}")
-            for _ in range(btw):
-                start_id += 1
-                links.append(f"{link}/{start_id}")
-    else:
-        msg_id = int(msg_id)
-
-    if chat.isdigit():
-        chat = int(chat) if private else int(f"-100{chat}")
-
-    try:
-        message = await tg.get_messages(chat_id=chat, message_ids=msg_id)
-        if message.empty:
-            return None
-    except Exception as e:
-        raise TgLinkException(f"You don't have access to this chat!. ERROR: {e}") from e
-
-    return links or message
 
 
 async def update_status_message(sid, force=False):

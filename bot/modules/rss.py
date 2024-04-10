@@ -14,7 +14,7 @@ from swibots import (
 )
 from time import time
 
-from bot import scheduler, rss_dict, LOGGER, DATABASE_URL, config_dict, bot
+from bot import scheduler, rss_dict, LOGGER, DATABASE_URL, config_dict, bot, bot_name
 from bot.helper.ext_utils.bot_utils import arg_parser
 from bot.helper.ext_utils.db_handler import DbManager
 from bot.helper.ext_utils.exceptions import RssShutdownException
@@ -78,6 +78,8 @@ async def rssSub(ctx, pre_event):
     msg = ""
     items = message.message.split("\n")
     for index, item in enumerate(items, start=1):
+        if len(item) == 0:
+            continue
         args = item.split()
         if len(args) < 2:
             await sendMessage(
@@ -182,7 +184,7 @@ async def rssSub(ctx, pre_event):
         if DATABASE_URL and rss_dict[user_id]:
             await DbManager().rss_update(user_id)
         await sendMessage(message, msg)
-        is_sudo = await CustomFilters.sudo("", message)
+        is_sudo = await CustomFilters.sudo(ctx)
         if scheduler.state == 2:
             scheduler.resume()
         elif is_sudo and not scheduler.running:
@@ -293,7 +295,7 @@ async def rssList(ctx, start, all_users=False):
                 list_feed += (
                     f"<b>Sensitive:</b> <copy>{data.get('sensitive', False)}</copy>\n"
                 )
-                list_feed += f"<b>Paused:</b> <copy>{data['paused']}</copy>\n"
+                list_feed += f"<b>Paused:</b> <copy>{data['paused']}</copy>"
     buttons.ibutton("Back", f"rss back {user_id}")
     buttons.ibutton("Close", f"rss close {user_id}")
     if keysCount > 5:
@@ -364,13 +366,15 @@ async def rssGet(ctx, pre_event):
     await updateRssMenu(pre_event)
 
 
-async def rssEdit(ctx, message, pre_event):
+async def rssEdit(ctx, pre_event):
     message = ctx.event.message
     user_id = message.user_id
     handler_dict[user_id] = False
     items = message.message.split("\n")
     updated = False
     for item in items:
+        if len(item) == 0:
+            continue
         args = item.split()
         title = args[0].strip()
         if len(args) < 2:
@@ -435,15 +439,15 @@ async def rssDelete(ctx, pre_event):
 async def event_handler(ctx, pfunc):
     user_id = ctx.event.action_by_id
     message = ctx.event.message
-    chat_id = message.receiver_id or message.group_id
+    chat_id = message.group_id or message.receiver_id
     handler_dict[user_id] = True
     start_time = time()
 
     async def event_filter(_, rctx):
         rmsg = rctx.event.message
         ruser_id = rmsg.user_id
-        rchat_id = rmsg.user_id or rmsg.group_id
-        return bool(ruser_id == user_id and rchat_id == chat_id and rmsg.message)
+        rchat_id = rmsg.group_id or rmsg.user_id
+        return bool(not rmsg.user.is_bot and ruser_id == user_id and rchat_id == chat_id and rmsg.message)
 
     handler = MessageHandler(pfunc, filters.create(event_filter))
     ctx.app.add_handler(handler)
@@ -720,8 +724,11 @@ async def rssMonitor():
                     if command := data["command"]:
                         cmd = command.split(maxsplit=1)
                         cmd.insert(1, url)
-                        feed_msg = " ".join(cmd)
-                        if not feed_msg.startswith("/"):
+                        feed_msg = " ".join(cmd).lstrip("/")
+                        if "|" in config_dict["RSS_CHAT"]:
+                            if not feed_msg.startswith("@"):
+                                feed_msg = f"@{bot_name}/{feed_msg}"
+                        else:
                             feed_msg = f"/{feed_msg}"
                     else:
                         feed_msg = f"<b>Name: </b><copy>{item_title.replace('>', '').replace('<', '')}</copy>\n\n"

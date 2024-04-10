@@ -69,7 +69,7 @@ class TaskConfig:
         self.userId = self.user.id
         self.userDict = user_data.get(self.userId, {})
         self.dir = f"{DOWNLOAD_DIR}{self.mid}"
-        self.chat = self.message.receiver_id or self.message.group_id
+        self.chat = self.message.group_id or self.message.user_id
         self.link = ""
         self.upDest = ""
         self.rcFlags = ""
@@ -286,6 +286,7 @@ class TaskConfig:
             self.tag, id_ = text[1].split("Tag: ")[1].split()
             self.user = self.message.user = await self.client.get_user(int(id_))
             self.userId = self.user.id
+            self.chat = self.message.group_id or self.message.user_id
             self.userDict = user_data.get(self.userId, {})
         self.tag = f"@{self.user.username}"
 
