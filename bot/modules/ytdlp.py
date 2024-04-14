@@ -1,5 +1,5 @@
 from aiohttp import ClientSession
-from asyncio import wait_for, Event, wrap_future
+from asyncio import wait_for, Event
 from functools import partial
 from time import time
 from yt_dlp import YoutubeDL
@@ -91,7 +91,6 @@ class YtSelection:
             self.listener.client.remove_handler(*handler)
 
     async def get_quality(self, result):
-        future = self._event_handler()
         buttons = ButtonMaker()
         if "entries" in result:
             self._is_playlist = True
@@ -167,7 +166,7 @@ class YtSelection:
         self._reply_to = await sendMessage(
             self.listener.message, msg, self._main_buttons
         )
-        await wrap_future(future)
+        await self._event_handler()
         if not self.listener.isCancelled:
             await deleteMessage(self._reply_to)
         return self.qual

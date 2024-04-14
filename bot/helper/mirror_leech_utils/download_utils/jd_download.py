@@ -1,4 +1,4 @@
-from asyncio import wait_for, Event, wrap_future, sleep
+from asyncio import wait_for, Event, sleep
 from functools import partial
 from time import time
 from aiofiles.os import path as aiopath
@@ -15,7 +15,7 @@ from bot import (
     jd_lock,
     jd_downloads,
 )
-from bot.helper.ext_utils.bot_utils import new_thread, retry_function
+from bot.helper.ext_utils.bot_utils import retry_function
 from bot.helper.ext_utils.jdownloader_booter import jdownloader
 from bot.helper.ext_utils.task_manager import (
     check_running_tasks,
@@ -54,7 +54,6 @@ class JDownloaderHelper:
         self.listener = listener
         self.event = Event()
 
-    @new_thread
     async def _event_handler(self):
         pfunc = partial(configureDownload, obj=self)
         handler = self.listener.client.add_handler(
@@ -72,7 +71,6 @@ class JDownloaderHelper:
             self.listener.client.remove_handler(*handler)
 
     async def waitForConfigurations(self):
-        future = self._event_handler()
         buttons = ButtonMaker()
         buttons.ubutton("Select", "https://my.jdownloader.org")
         buttons.ibutton("Done Selecting", "jdq sdone")
@@ -80,7 +78,7 @@ class JDownloaderHelper:
         button = buttons.build_menu(2)
         msg = f"Disable/Remove the unwanted files or change variants or edit files names from myJdownloader site for <b>{self.listener.name}</b> but don't start it manually!\n\nAfter finish press Done Selecting!\nTimeout: 300s"
         self._reply_to = await sendMessage(self.listener.message, msg, button)
-        await wrap_future(future)
+        await self._event_handler()
         if not self.listener.isCancelled:
             await deleteMessage(self._reply_to)
         return self.listener.isCancelled
