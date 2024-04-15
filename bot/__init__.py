@@ -132,7 +132,7 @@ if DATABASE_URL:
             qbit_options = qbit_opt
         conn.close()
         BOT_TOKEN = environ.get("BOT_TOKEN", "")
-        bot_id = BOT_TOKEN.split(":", 1)[0]
+        bot_id = BOT_TOKEN.split(".", 1)[0]
         DATABASE_URL = environ.get("DATABASE_URL", "")
     except Exception as e:
         LOGGER.error(f"Database ERROR: {e}")

@@ -85,7 +85,7 @@ class SwUploader:
     async def _msg_to_reply(self):
         if self._listener.upDest:
             text = self._listener.message.message.lstrip("/").lstrip("@")
-            if "|" in self._listener.upDest:
+            if not isinstance(self._listener.upDest, int) and "|" in self._listener.upDest:
                 commmunity_id, group_id = self._listener.upDest.split("|")
                 receiver_id = None
             else:
@@ -236,7 +236,7 @@ class SwUploader:
     def processed_bytes(self):
         return self._processed_bytes
 
-    async def cancel_download(self):
+    async def cancel_task(self):
         self._listener.isCancelled = True
         LOGGER.info(f"Cancelling Upload: {self._listener.name}")
         await self._listener.onUploadError("your upload has been stopped!")
