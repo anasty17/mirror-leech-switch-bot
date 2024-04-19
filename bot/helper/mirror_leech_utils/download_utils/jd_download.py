@@ -35,10 +35,9 @@ from bot.helper.switch_helper.message_utils import (
 )
 
 
-async def configureDownload(_, query, obj):
-    data = query.data.split()
-    message = query.message
-    await query.answer()
+async def configureDownload(ctx, obj):
+    data = ctx.event.callback_data.split()
+    message = ctx.event.message
     if data[1] == "sdone":
         obj.event.set()
     elif data[1] == "cancel":
@@ -56,11 +55,10 @@ class JDownloaderHelper:
 
     async def _event_handler(self):
         pfunc = partial(configureDownload, obj=self)
-        handler = self.listener.client.add_handler(
-            CallbackQueryHandler(
+        handler = CallbackQueryHandler(
                 pfunc, filter=regexp("^jdq") & user(self.listener.userId)
             )
-        )
+        self.listener.client.add_handler(handler)
         try:
             await wait_for(self.event.wait(), timeout=self._timeout)
         except:
@@ -68,7 +66,7 @@ class JDownloaderHelper:
             self.listener.isCancelled = True
             self.event.set()
         finally:
-            self.listener.client.remove_handler(*handler)
+            self.listener.client.remove_handler(handler)
 
     async def waitForConfigurations(self):
         buttons = ButtonMaker()

@@ -198,7 +198,7 @@ async def getUserId(title):
         return next(
             (
                 (True, user_id)
-                for user_id, feed in list(rss_dict.items())
+                for user_id, feed in rss_dict.items()
                 if feed["title"] == title
             ),
             (False, False),
@@ -266,9 +266,9 @@ async def rssList(ctx, start, all_users=False):
     if all_users:
         list_feed = f"<b>All subscriptions | Page: {int(start / 5)} </b>"
         async with rss_dict_lock:
-            keysCount = sum(len(v.keys()) for v in list(rss_dict.values()))
+            keysCount = sum(len(v.keys()) for v in rss_dict.values())
             index = 0
-            for titles in list(rss_dict.values()):
+            for titles in rss_dict.values():
                 for index, (title, data) in enumerate(
                     list(titles.items())[start : 5 + start]
                 ):
@@ -649,7 +649,7 @@ async def rssMonitor():
         return
     all_paused = True
     for user, items in list(rss_dict.items()):
-        for title, data in list(items.items()):
+        for title, data in items.items():
             try:
                 if data["paused"]:
                     continue

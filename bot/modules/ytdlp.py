@@ -75,11 +75,10 @@ class YtSelection:
 
     async def _event_handler(self):
         pfunc = partial(select_format, obj=self)
-        handler = self.listener.client.add_handler(
-            CallbackQueryHandler(
+        handler = CallbackQueryHandler(
                 pfunc, filter=regexp("^ytq") & user(self.listener.userId)
             )
-        )
+        self.listener.client.add_handler(handler)
         try:
             await wait_for(self.event.wait(), timeout=self._timeout)
         except:
@@ -88,7 +87,7 @@ class YtSelection:
             self.listener.isCancelled = True
             self.event.set()
         finally:
-            self.listener.client.remove_handler(*handler)
+            self.listener.client.remove_handler(handler)
 
     async def get_quality(self, result):
         buttons = ButtonMaker()

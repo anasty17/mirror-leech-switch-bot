@@ -10,7 +10,6 @@ from swibots import CallbackQueryHandler, regexp, user
 from bot import LOGGER, config_dict
 from bot.helper.ext_utils.bot_utils import (
     cmd_exec,
-    new_task,
     update_user_ldata,
 )
 from bot.helper.ext_utils.db_handler import DbManager
@@ -24,12 +23,9 @@ from bot.helper.switch_helper.message_utils import (
 
 LIST_LIMIT = 6
 
-
-@new_task
-async def path_updates(_, query, obj):
-    await query.answer()
-    message = query.message
-    data = query.data.split()
+async def path_updates(ctx, obj):
+    data = ctx.event.callback_data.split()
+    message = ctx.event.message
     if data[1] == "cancel":
         obj.remote = "Task has been cancelled!"
         obj.path = ""
@@ -53,7 +49,7 @@ async def path_updates(_, query, obj):
             await obj.back_from_path()
     elif data[1] == "re":
         # some remotes has space
-        data = query.data.split(maxsplit=2)
+        data = ctx.event.callback_data.split(maxsplit=2)
         obj.remote = data[2]
         await obj.get_path()
     elif data[1] == "pa":
@@ -129,11 +125,10 @@ class RcloneList:
 
     async def _event_handler(self):
         pfunc = partial(path_updates, obj=self)
-        handler = self.listener.client.add_handler(
-            CallbackQueryHandler(
+        handler = CallbackQueryHandler(
                 pfunc, filter=regexp("^rcq") & user(self.listener.userId)
             )
-        )
+        self.listener.client.add_handler(handler)
         try:
             await wait_for(self.event.wait(), timeout=self._timeout)
         except:
@@ -142,7 +137,7 @@ class RcloneList:
             self.listener.isCancelled = True
             self.event.set()
         finally:
-            self.listener.client.remove_handler(*handler)
+            self.listener.client.remove_handler(handler)
 
     async def _send_list_message(self, msg, button):
         if not self.listener.isCancelled:

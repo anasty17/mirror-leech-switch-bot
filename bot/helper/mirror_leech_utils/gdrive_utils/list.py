@@ -8,7 +8,7 @@ from time import time
 from swibots import CallbackQueryHandler, regexp, user
 
 from bot import config_dict
-from bot.helper.ext_utils.bot_utils import new_task, update_user_ldata
+from bot.helper.ext_utils.bot_utils import update_user_ldata
 from bot.helper.ext_utils.db_handler import DbManager
 from bot.helper.ext_utils.status_utils import get_readable_file_size, get_readable_time
 from bot.helper.mirror_leech_utils.gdrive_utils.helper import GoogleDriveHelper
@@ -24,11 +24,9 @@ LOGGER = getLogger(__name__)
 LIST_LIMIT = 6
 
 
-@new_task
-async def id_updates(_, query, obj):
-    await query.answer()
-    message = query.message
-    data = query.data.split()
+async def id_updates(ctx, obj):
+    data = ctx.event.callback_data.split()
+    message = ctx.event.message
     if data[1] == "cancel":
         obj.id = "Task has been cancelled!"
         obj.listener.isCancelled = True
@@ -135,11 +133,10 @@ class gdriveList(GoogleDriveHelper):
 
     async def _event_handler(self):
         pfunc = partial(id_updates, obj=self)
-        handler = self.listener.client.add_handler(
-            CallbackQueryHandler(
+        handler = CallbackQueryHandler(
                 pfunc, filter=regexp("^gdq") & user(self.listener.userId)
             )
-        )
+        self.listener.client.add_handler(handler)
         try:
             await wait_for(self.event.wait(), timeout=self._timeout)
         except:
@@ -147,7 +144,7 @@ class gdriveList(GoogleDriveHelper):
             self.listener.isCancelled = True
             self.event.set()
         finally:
-            self.listener.client.remove_handler(*handler)
+            self.listener.client.remove_handler(handler)
 
     async def _send_list_message(self, msg, button):
         if not self.listener.isCancelled:
