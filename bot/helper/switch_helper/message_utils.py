@@ -74,6 +74,7 @@ async def delete_status():
 
 async def update_status_message(sid, force=False):
     async with task_dict_lock:
+        sid = f"{sid}"
         if not status_dict.get(sid):
             if obj := Intervals["status"].get(sid):
                 obj.cancel()
@@ -113,7 +114,7 @@ async def update_status_message(sid, force=False):
 
 async def sendStatusMessage(msg, user_id=0):
     async with task_dict_lock:
-        sid = msg.receiver_id or msg.group_id
+        sid = str(msg.group_id or msg.receiver_id)
         is_user = bool(user_id)
         if sid in list(status_dict.keys()):
             page_no = status_dict[sid]["page_no"]
