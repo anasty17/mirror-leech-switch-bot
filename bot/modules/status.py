@@ -143,7 +143,7 @@ async def status_pages(ctx):
 <b>OSDS:</b> {get_readable_file_size(seed_speed)}/s
 """
         button = ButtonMaker()
-        button.ibutton("Back", f"status {data[1]} ref")
+        button.ibutton("Back", f"status {key} ref")
         await editMessage(message, msg, button.build_menu())
 
 

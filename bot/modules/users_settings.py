@@ -262,7 +262,12 @@ async def set_option(ctx, pre_event, option):
         user_dict.setdefault("upload_paths", {})
         lines = value.split("/n")
         for line in lines:
-            name, path = line.split(maxsplit=1)
+            data = line.split(maxsplit=1)
+            if len(data) != 2:
+                await sendMessage(message, "Wrong format! Add <name> <path>")
+                await update_user_settings(pre_event)
+                return
+            name, path = data
             user_dict["upload_paths"][name] = path
         value = user_dict["upload_paths"]
     update_user_ldata(user_id, option, value)
@@ -519,7 +524,7 @@ Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp
         buttons.ibutton("Close", f"userset {user_id} close")
         await editMessage(
             message,
-            f"Send Leech split size in bytes. Timeout: 60 sec",
+            "Send Leech split size in bytes. Timeout: 60 sec",
             buttons.build_menu(1),
         )
         pfunc = partial(set_option, pre_event=ctx, option="split_size")
