@@ -14,7 +14,8 @@ from logging import (
     ERROR,
 )
 from os import remove, path as ospath, environ
-from pymongo import MongoClient
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 from swibots import Client as stClient
 from pyrogram import Client as tgClient, enums
 from qbittorrentapi import Client as qbClient
@@ -36,6 +37,7 @@ getLogger("urllib3").setLevel(INFO)
 getLogger("pyrogram").setLevel(ERROR)
 getLogger("httpx").setLevel(ERROR)
 getLogger("swibots.app").setLevel(ERROR)
+getLogger("pymongo").setLevel(ERROR)
 
 botStartTime = time()
 
@@ -95,7 +97,7 @@ if len(DATABASE_URL) == 0:
 
 if DATABASE_URL:
     try:
-        conn = MongoClient(DATABASE_URL)
+        conn = MongoClient(DATABASE_URL, server_api=ServerApi("1"))
         db = conn.mlsb
         current_config = dict(dotenv_values("config.env"))
         old_config = db.settings.deployConfig.find_one({"_id": bot_id})
@@ -204,14 +206,18 @@ TELEGRAM_HASH = TELEGRAM_HASH if len(TELEGRAM_HASH) == 0 else TELEGRAM_HASH
 TG_SESSION_STRING = environ.get("TG_SESSION_STRING", "")
 if len(TG_SESSION_STRING) != 0 and TELEGRAM_HASH and TELEGRAM_API:
     log_info("Creating client from TG_SESSION_STRING")
-    tg = tgClient(
-        "tg_session",
-        TELEGRAM_API,
-        TELEGRAM_HASH,
-        session_string=TG_SESSION_STRING,
-        parse_mode=enums.ParseMode.HTML,
-        max_concurrent_transmissions=10,
-    ).start()
+    try:
+        tg = tgClient(
+            "tg_session",
+            TELEGRAM_API,
+            TELEGRAM_HASH,
+            session_string=TG_SESSION_STRING,
+            parse_mode=enums.ParseMode.HTML,
+            max_concurrent_transmissions=10,
+        ).start()
+    except:
+        log_error("Failed to create client from TG_SESSION_STRING")
+        tg = None
 else:
     tg = None
 

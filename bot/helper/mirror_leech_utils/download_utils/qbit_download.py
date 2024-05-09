@@ -20,8 +20,6 @@ from bot.helper.switch_helper.message_utils import (
     sendStatusMessage,
 )
 
-client = get_qb_client()
-
 """
 Only v1 torrents
 #from hashlib import sha1
@@ -42,7 +40,7 @@ def _get_hash_file(fpath):
 
 
 async def add_qb_torrent(listener, path, ratio, seed_time):
-    client = await sync_to_async(get_qb_client)
+    client = get_qb_client()
     try:
         url = listener.link
         tpath = None
