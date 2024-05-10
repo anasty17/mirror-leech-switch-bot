@@ -16,7 +16,7 @@ namespaces = {}
 
 
 def namespace_of(message):
-    chat = message.user or message.group
+    chat = message.group or message.user
     chat_id = chat.id
     if chat_id not in namespaces:
         namespaces[chat_id] = {
@@ -27,7 +27,7 @@ def namespace_of(message):
             "chat": chat,
         }
 
-    return namespaces[message.chat.id]
+    return namespaces[chat_id]
 
 
 def log_input(message):
