@@ -156,6 +156,16 @@ if len(OWNER_ID) == 0:
 else:
     OWNER_ID = int(OWNER_ID)
 
+USER_TOKEN = environ.get("USER_TOKEN", "")
+if len(USER_TOKEN):
+    try:
+        user = stClient(USER_TOKEN, "ADMINTOKEN")
+        log_info("Created client from USER_TOKEN")
+    except Exception as e:
+        log_error(f"Failed to create user client: {e}")
+        user = None
+        USER_TOKEN = ""
+
 GDRIVE_ID = environ.get("GDRIVE_ID", "")
 if len(GDRIVE_ID) == 0:
     GDRIVE_ID = ""
@@ -399,6 +409,7 @@ config_dict = {
     "UPSTREAM_REPO": UPSTREAM_REPO,
     "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
     "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
+    "USER_TOKEN": USER_TOKEN,
     "WEB_PINCODE": WEB_PINCODE,
     "YT_DLP_OPTIONS": YT_DLP_OPTIONS,
 }
