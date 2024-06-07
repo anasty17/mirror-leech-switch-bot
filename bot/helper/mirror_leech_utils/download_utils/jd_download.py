@@ -259,7 +259,12 @@ async def add_jd_download(listener, path):
 
     msg, button = await stop_duplicate_check(listener)
     if msg:
+        await retry_function(
+            jdownloader.device.linkgrabber.remove_links, package_ids=online_packages
+        )
         await listener.onDownloadError(msg, button)
+        async with jd_lock:
+            del jd_downloads[gid]
         return
 
     if listener.select and await JDownloaderHelper(listener).waitForConfigurations():

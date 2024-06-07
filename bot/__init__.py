@@ -157,14 +157,15 @@ else:
     OWNER_ID = int(OWNER_ID)
 
 USER_TOKEN = environ.get("USER_TOKEN", "")
-if len(USER_TOKEN):
+if len(USER_TOKEN) == 0:
+    USER_TOKEN = ""
+else:
     try:
         user = stClient(USER_TOKEN, "ADMINTOKEN")
         log_info("Created client from USER_TOKEN")
     except Exception as e:
         log_error(f"Failed to create user client: {e}")
         user = None
-        USER_TOKEN = ""
 
 GDRIVE_ID = environ.get("GDRIVE_ID", "")
 if len(GDRIVE_ID) == 0:
@@ -286,7 +287,7 @@ LEECH_DUMP_CHAT = environ.get("LEECH_DUMP_CHAT", "")
 LEECH_DUMP_CHAT = "" if len(LEECH_DUMP_CHAT) == 0 else LEECH_DUMP_CHAT
 
 STATUS_LIMIT = environ.get("STATUS_LIMIT", "")
-STATUS_LIMIT = 10 if len(STATUS_LIMIT) == 0 else int(STATUS_LIMIT)
+STATUS_LIMIT = 4 if len(STATUS_LIMIT) == 0 else int(STATUS_LIMIT)
 
 CMD_SUFFIX = environ.get("CMD_SUFFIX", "")
 
@@ -452,13 +453,17 @@ if not ospath.exists("accounts"):
     config_dict["USE_SERVICE_ACCOUNTS"] = False
 
 
-def get_qb_client():
-    return qbClient(
-        host="localhost",
-        port=8090,
-        VERIFY_WEBUI_CERTIFICATE=False,
-        REQUESTS_ARGS={"timeout": (30, 60)},
-    )
+qbittorrent_client = qbClient(
+    host="localhost",
+    port=8090,
+    VERIFY_WEBUI_CERTIFICATE=False,
+    REQUESTS_ARGS={"timeout": (30, 60)},
+    HTTPADAPTER_ARGS={
+        "pool_maxsize": 500,
+        "max_retries": 10,
+        "pool_block": True,
+    },
+)
 
 
 aria2c_global = [
@@ -480,18 +485,18 @@ aria2c_global = [
 
 scheduler = AsyncIOScheduler(timezone=str(get_localzone()), event_loop=bot_loop)
 
-if not qbit_options:
-    qbit_options = dict(get_qb_client().app_preferences())
-    del qbit_options["listen_port"]
-    for k in list(qbit_options.keys()):
-        if k.startswith("rss"):
-            del qbit_options[k]
-else:
-    qb_opt = {**qbit_options}
-    for k, v in list(qb_opt.items()):
-        if v in ["", "*"]:
-            del qb_opt[k]
-    get_qb_client().app_set_preferences(qb_opt)
+
+def get_qb_options():
+    global qbit_options
+    if not qbit_options:
+        qbit_options = dict(qbittorrent_client.app_preferences())
+        del qbit_options["listen_port"]
+    else:
+        qb_opt = {**qbit_options}
+        qbittorrent_client.app_set_preferences(qb_opt)
+
+
+get_qb_options()
 
 aria2 = ariaAPI(ariaClient(host="http://localhost", port=6800, secret=""))
 if not aria2_options:

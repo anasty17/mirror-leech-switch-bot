@@ -6,7 +6,8 @@ programming in Python.
 
 ## qBittorrent
 
-- Select files from a Torrent before and during downloading (Requires Base URL) (task option)
+- External access to webui, so you can remove files or edit settings. Then you can sync settings in database with sync button in bsetting
+- Select files from a Torrent before and during download using mltb file selector (Requires Base URL) (task option)
 - Seed torrents to a specific ratio and time (task option)
 - Edit Global Options while the bot is running from bot settings (global option)
 
@@ -232,7 +233,7 @@ quotes, even if it's `Int`, `Bool` or `List`.
   More [HERE](https://github.com/anasty17/mirror-leech-switch-bot/tree/master#upload).`Str`
 - `STATUS_UPDATE_INTERVAL`: Time in seconds after which the progress/status message will be updated. Recommended `10`
   seconds at least. `Int`
-- `STATUS_LIMIT`: Limit the no. of tasks shown in status message with buttons. Default is `10`. **NOTE**: Recommended
+- `STATUS_LIMIT`: Limit the no. of tasks shown in status message with buttons. Default is `4`. **NOTE**: Recommended
   limit is `4` tasks. `Int`
 - `EXTENSION_FILTER`: File extensions that won't upload/clone. Separate them by space. `Str`
 - `FILELION_API`: Filelion api key to mirror Filelion links. Get it
@@ -247,12 +248,18 @@ quotes, even if it's `Int`, `Bool` or `List`.
 - `USE_SERVICE_ACCOUNTS`: Whether to use Service Accounts or not, with google-api-python-client. For this to work
   see [Using Service Accounts](https://github.com/anasty17/mirror-leech-switch-bot#generate-service-accounts-what-is-service-account)
   section below. Default is `False`. `Bool`
-- `NAME_SUBSTITUTE`: Add word/letter/sentense/pattern to remove or replace with other words with sensitive case or without. **Note**: Seed will get disbaled while using this option
-  * Example: 'text : code : s|mirror : leech|tea :  : s|clone'
+- `NAME_SUBSTITUTE`: Add word/letter/sentense/pattern to remove or replace with other words with sensitive case or without.**Notes**:
+  1. Seed will get disbaled while using this option
+  2. Before any character you must add \, those are the characters: `\^$.|?*+()[]{}-`
+  * Example-1: `text : code : s | mirror : leech | tea :  : s | clone`
     - text will get replaced by code with sensitive case
     - mirror will get replaced by leech
     - tea will get removed with sensitive case
     - clone will get removed
+  * Example-2: `\(text\) | \[test\] : test | \\text\\ : text : s`
+    - `(text)` will get removed
+    - `[test]` will get replaced by test
+    - `\text\` will get replaced by text with sensitive case
 
 **3. GDrive Tools**
 
@@ -307,6 +314,7 @@ quotes, even if it's `Int`, `Bool` or `List`.
     - **Qbittorrent NOTE**: If your facing ram issues then set limit for `MaxConnections`,
       decrease `AsyncIOThreadsCount`, set limit of `DiskWriteCacheSize` to `32` and decrease `MemoryWorkingSetLimit`
       from qbittorrent.conf or bsetting command.
+    - Open port 8090 in your vps to access webui from any device. username: mltb, password: mltbmltb
 
 **8. JDownloader**
 
@@ -397,7 +405,7 @@ sudo docker stop id
 change it in [docker-compose.yml](https://github.com/anasty17/mirror-leech-switch-bot/blob/master/docker-compose.yml)
 also.
 
-- Install docker-compose
+- Install docker compose plugin
 
 ```
 sudo apt install docker-compose-plugin
@@ -432,10 +440,6 @@ sudo docker compose start
 ```
 sudo docker compose logs --follow
 ```
-
-- Tutorial video from Tortoolkit repo for docker-compose and checking ports
-
-<p><a href="https://youtu.be/c8_TU1sPK08"> <img src="https://img.shields.io/badge/See%20Video-black?style=for-the-badge&logo=YouTube" width="160""/></a></p>
 
 ------
 

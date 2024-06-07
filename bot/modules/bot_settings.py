@@ -36,10 +36,11 @@ from bot import (
     aria2c_global,
     task_dict,
     qbit_options,
-    get_qb_client,
+    qbittorrent_client,
     LOGGER,
     bot,
     jd_downloads,
+    get_qb_options,
 )
 from bot.helper.ext_utils.bot_utils import (
     setInterval,
@@ -108,6 +109,7 @@ async def get_buttons(key=None, edit_type=None):
                 "DATABASE_URL",
                 "BOT_TOKEN",
                 "DOWNLOAD_DIR",
+                "USER_TOKEN",
             ]:
                 msg += "Restart required for this edit to take effect!\n\n"
             msg += f"Send a valid value for {key}. Current value is '{config_dict[key]}'. Timeout: 60 sec"
@@ -170,6 +172,7 @@ Timeout: 60 sec"""
             buttons.ibutton("Edit", "botset edit qbit")
         else:
             buttons.ibutton("View", "botset view qbit")
+        buttons.ibutton("Sync Qbittorrent", "botset syncqbit")
         buttons.ibutton("Back", "botset back")
         buttons.ibutton("Close", "botset close")
         for x in range(0, len(qbit_options), 10):
@@ -313,7 +316,7 @@ async def edit_qbit(ctx, pre_message, key):
         value = float(value)
     elif value.isdigit():
         value = int(value)
-    await sync_to_async(get_qb_client().app_set_preferences, {key: value})
+    await sync_to_async(qbittorrent_client.app_set_preferences, {key: value})
     qbit_options[key] = value
     await update_buttons(pre_message, "qbit")
     await deleteMessage(message)
@@ -541,7 +544,7 @@ async def edit_bot_settings(ctx):
         elif data[2] in ["JD_EMAIL", "JD_PASS"]:
             jdownloader.device = None
             jdownloader.error = "JDownloader Credentials not provided!"
-            await create_subprocess_exec(["pkill", "-9", "-f", "java"])
+            await create_subprocess_exec("pkill", "-9", "-f", "java")
         config_dict[data[2]] = value
         await update_buttons(message, "var")
         if DATABASE_URL:
@@ -576,6 +579,11 @@ async def edit_bot_settings(ctx):
                     LOGGER.error(e)
         if DATABASE_URL:
             await DbManager().update_aria2(data[2], value)
+    elif data[1] == "syncqbit":
+        await ctx.event.answer("Syncronization Started. It takes up to 2 sec!", show_alert=True)
+        await get_qb_options()
+        if DATABASE_URL:
+            await DbManager().save_qbit_settings()
     elif data[1] == "emptyaria":
         aria2_options[data[2]] = ""
         await update_buttons(message, "aria")
@@ -591,7 +599,7 @@ async def edit_bot_settings(ctx):
         if DATABASE_URL:
             await DbManager().update_aria2(data[2], "")
     elif data[1] == "emptyqbit":
-        await sync_to_async(get_qb_client().app_set_preferences, {data[2]: value})
+        await sync_to_async(qbittorrent_client.app_set_preferences, {data[2]: value})
         qbit_options[data[2]] = ""
         await update_buttons(message, "qbit")
         if DATABASE_URL:
@@ -607,8 +615,8 @@ async def edit_bot_settings(ctx):
         rfunc = partial(update_buttons, message, "var")
         await event_handler(ctx, pfunc, rfunc)
     elif data[1] == "botvar" and STATE == "view":
-        value = config_dict[data[2]]
-        if len(str(value)) > 200:
+        value = f"{config_dict[data[2]]}"
+        if len(value) > 200:
             with BytesIO(str.encode(value)) as out_file:
                 out_file.name = f"{data[2]}.txt"
                 await sendFile(message, out_file)
@@ -622,8 +630,8 @@ async def edit_bot_settings(ctx):
         rfunc = partial(update_buttons, message, "aria")
         await event_handler(ctx, pfunc, rfunc)
     elif data[1] == "ariavar" and STATE == "view":
-        value = aria2_options[data[2]]
-        if len(str(value)) > 200:
+        value = f"{aria2_options[data[2]]}"
+        if len(value) > 200:
             with BytesIO(str.encode(value)) as out_file:
                 out_file.name = f"{data[2]}.txt"
                 await sendFile(message, out_file)
@@ -637,8 +645,8 @@ async def edit_bot_settings(ctx):
         rfunc = partial(update_buttons, message, "var")
         await event_handler(ctx, pfunc, rfunc)
     elif data[1] == "qbitvar" and STATE == "view":
-        value = qbit_options[data[2]]
-        if len(str(value)) > 200:
+        value = f"{qbit_options[data[2]]}"
+        if len(value) > 200:
             with BytesIO(str.encode(value)) as out_file:
                 out_file.name = f"{data[2]}.txt"
                 await sendFile(message, out_file)
@@ -691,6 +699,10 @@ async def load_config():
     BOT_TOKEN = environ.get("BOT_TOKEN", "")
     if len(BOT_TOKEN) == 0:
         BOT_TOKEN = config_dict["BOT_TOKEN"]
+
+    USER_TOKEN = environ.get("USER_TOKEN", "")
+    if len(USER_TOKEN) == 0:
+        USER_TOKEN = ""
 
     TELEGRAM_API = environ.get("TELEGRAM_API", "")
     if len(TELEGRAM_API) == 0:
@@ -814,7 +826,7 @@ async def load_config():
     LEECH_DUMP_CHAT = "" if len(LEECH_DUMP_CHAT) == 0 else LEECH_DUMP_CHAT
 
     STATUS_LIMIT = environ.get("STATUS_LIMIT", "")
-    STATUS_LIMIT = 10 if len(STATUS_LIMIT) == 0 else int(STATUS_LIMIT)
+    STATUS_LIMIT = 4 if len(STATUS_LIMIT) == 0 else int(STATUS_LIMIT)
 
     RSS_CHAT = environ.get("RSS_CHAT", "")
     RSS_CHAT = "" if len(RSS_CHAT) == 0 else RSS_CHAT
@@ -995,6 +1007,7 @@ async def load_config():
             "UPSTREAM_REPO": UPSTREAM_REPO,
             "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
             "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
+            "USER_TOKEN": USER_TOKEN,
             "WEB_PINCODE": WEB_PINCODE,
             "YT_DLP_OPTIONS": YT_DLP_OPTIONS,
         }

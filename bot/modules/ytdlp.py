@@ -76,8 +76,8 @@ class YtSelection:
     async def _event_handler(self):
         pfunc = partial(select_format, obj=self)
         handler = CallbackQueryHandler(
-                pfunc, filter=regexp("^ytq") & user(self.listener.userId)
-            )
+            pfunc, filter=regexp("^ytq") & user(self.listener.userId)
+        )
         self.listener.client.add_handler(handler)
         try:
             await wait_for(self.event.wait(), timeout=self._timeout)
@@ -235,20 +235,6 @@ def extract_info(link, options):
         return result
 
 
-async def _mdisk(link, name):
-    key = link.split("/")[-1]
-    async with AsyncClient(verify=False) as client:
-        resp = await client.get(
-            f"https://diskuploader.entertainvideo.com/v1/file/cdnurl?param={key}"
-        )
-    if resp.status_code == 200:
-        resp_json = resp.json()
-        link = resp_json["source"]
-        if not name:
-            name = resp_json["filename"]
-    return name, link
-
-
 class YtDlp(TaskListener):
     def __init__(
         self,
@@ -378,7 +364,7 @@ class YtDlp(TaskListener):
             return
 
         if "mdisk.me" in self.link:
-            name, self.link = await _mdisk(self.link, name)
+            await self._mdisk()
 
         try:
             await self.beforeStart()
@@ -436,6 +422,18 @@ class YtDlp(TaskListener):
         playlist = "entries" in result
         ydl = YoutubeDLHelper(self)
         await ydl.add_download(path, qual, playlist, opt)
+
+    async def _mdisk(self):
+        key = self.link.split("/")[-1]
+        async with AsyncClient(verify=False) as client:
+            resp = await client.get(
+                f"https://diskuploader.entertainvideo.com/v1/file/cdnurl?param={key}"
+            )
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            self.link = resp_json["source"]
+            if not self.name:
+                self.name = resp_json["filename"]
 
 
 async def ytdl(ctx):
