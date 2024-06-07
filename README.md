@@ -223,6 +223,7 @@ quotes, even if it's `Int`, `Bool` or `List`.
   generate database. Data will be saved in Database: auth and sudo users, users settings including thumbnails for each
   user, rss data and incomplete tasks. **NOTE**: You can always edit all settings that saved in database from the
   official site -> (Browse collections). `Str`
+- `USER_TOKEN` : The Switch User Token for RSS. Tap Switch Logo and Click copy to get User token for your account. `Str`
 - `DOWNLOAD_DIR`: The path to the local folder where the downloads should be downloaded to. `Str`
 - `CMD_SUFFIX`: commands index number. This number will added at the end all commands. `Str`|`Int`
 - `AUTHORIZED_CHATS`: Fill user_id and chat_id of groups/users you want to authorize. Separate them by space. `Int`
