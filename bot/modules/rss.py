@@ -218,7 +218,7 @@ async def rssUpdate(ctx, pre_event, state):
             if is_sudo:
                 res, user_id = await getUserId(title)
             if not res:
-                user_id = message.from_user.id
+                user_id = message.user_id
                 await sendMessage(message, f"{title} not found!")
                 continue
         istate = rss_dict[user_id][title].get("paused", False)
@@ -239,7 +239,7 @@ async def rssUpdate(ctx, pre_event, state):
             elif is_sudo and not scheduler.running:
                 addJob()
                 scheduler.start()
-        if is_sudo and DATABASE_URL and user_id != message.from_user.id:
+        if is_sudo and DATABASE_URL and user_id != message.user_id:
             await DbManager().rss_update(user_id)
         if not rss_dict[user_id]:
             async with rss_dict_lock:
