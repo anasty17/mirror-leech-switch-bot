@@ -39,7 +39,7 @@ class DbManager:
         # Save bot settings
         try:
             await self._db.settings.config.replace_one(
-                {"_id": bot_id}, {"$set": config_dict}, upsert=True
+                {"_id": bot_id}, config_dict, upsert=True
             )
         except Exception as e:
             LOGGER.error(f"DataBase Collection Error: {e}")
