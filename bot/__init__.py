@@ -159,6 +159,7 @@ else:
 USER_TOKEN = environ.get("USER_TOKEN", "")
 if len(USER_TOKEN) == 0:
     USER_TOKEN = ""
+    user = None
 else:
     try:
         user = stClient(USER_TOKEN, "ADMINTOKEN")
